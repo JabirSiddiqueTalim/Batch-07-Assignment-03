@@ -194,7 +194,7 @@ FROM
 SELECT
   booking_id,
   match_id,
-  round(total_cost)
+  round(total_cost) AS total_cost
 FROM
   bookings
 WHERE
@@ -204,3 +204,14 @@ WHERE
     FROM
       bookings
   );
+
+
+--Query 7: Retrieve the top 2 most expensive matches sorted by base ticket price, skipping the absolute highest premium match.
+SELECT
+  match_id,
+  fixture,
+ round( base_ticket_price) as base_ticket_price
+FROM
+  matches
+ORDER BY
+  base_ticket_price DESC limit 2 offset 1;
