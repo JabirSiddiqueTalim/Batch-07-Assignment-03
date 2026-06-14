@@ -1,27 +1,42 @@
+DROP TABLE IF EXISTS Bookings;
+DROP TABLE IF EXISTS Matches;
+DROP TABLE IF EXISTS Users;
 CREATE TABLE Users (
-  user_id serial PRIMARY KEY,
+  user_id int PRIMARY KEY,
   full_name varchar(100) NOT NULL,
   email varchar(100) UNIQUE,
   role varchar(50) CHECK (role IN ('Ticket Manager', 'Football Fan')),
   phone_number varchar(25)
 );
 
+
 CREATE TABLE Matches (
-  match_id serial PRIMARY KEY,
+  match_id int PRIMARY KEY,
   fixture text NOT NULL,
   tournament_category varchar(255) NOT NULL,
   base_ticket_price decimal(10, 2) NOT NULL CHECK (base_ticket_price >= 0),
-  match_status varchar(50) NOT NULL CHECK ( match_status IN ('Available', 'Selling Fast','Sold Out','Postponed'))
+  match_status varchar(50) NOT NULL CHECK (
+    match_status IN (
+      'Available',
+      'Selling Fast',
+      'Sold Out',
+      'Postponed'
+    )
+  )
 );
 
+
 CREATE TABLE Bookings (
-  booking_id serial PRIMARY KEY,
+  booking_id int PRIMARY KEY,
   user_id int NOT NULL REFERENCES Users (user_id),
   match_id int NOT NULL REFERENCES Matches (match_id),
   seat_number varchar(10),
-  payment_status varchar(50) CHECK (payment_status IN ('Pending', 'Confirmed', 'Cancelled', 'Refunded')),
+  payment_status varchar(50) CHECK (
+    payment_status IN ('Pending', 'Confirmed', 'Cancelled', 'Refunded')
+  ),
   total_cost decimal(10, 2) NOT NULL CHECK (total_cost >= 0)
 );
+
 
 INSERT INTO
   Users (user_id, full_name, email, role, phone_number)
@@ -142,6 +157,7 @@ WHERE
   full_name ILIKE 'Tanvir%'
   OR full_name ILIKE '%Haque';
 
+
 --Query 3: Retrieve all booking records where the payment status is missing (NULL), replacing the empty result with 'Action Required'.
 SELECT
   booking_id,
@@ -153,7 +169,25 @@ FROM
 WHERE
   payment_status IS NULL;
 
+
 --Query 4: Retrieve match booking details along with the User's full name and the scheduled Match fixture teams.
-select  booking_id	,full_name,	fixture,round(total_cost) as total_cost from bookings
-inner join users using(user_id)
-inner join matches using(match_id)
+SELECT
+  booking_id,
+  full_name,
+  fixture,
+  round(total_cost) AS total_cost
+FROM
+  bookings
+  INNER JOIN users USING (user_id)
+  INNER JOIN matches USING (match_id)
+  
+  --Query 5: Display a comprehensive list of all users and their booking IDs, ensuring that fans who have never bought a ticket are still listed.
+SELECT
+  user_id,
+  full_name,
+  booking_id
+FROM
+  users
+  LEFT JOIN bookings USING (user_id);
+
+--Query 6: Find all ticket bookings where the total cost is strictly higher than the average cost of all ticket bookings.
